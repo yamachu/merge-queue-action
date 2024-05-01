@@ -1,0 +1,14 @@
+{
+  "name": "merge-queue-action",
+  "author": "yamachu <yamachu.dev@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/github-script": "github:actions/github-script",
+    "typescript": "5.4.5"
+  }
+}
