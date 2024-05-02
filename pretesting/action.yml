@@ -1,0 +1,93 @@
+name: "Merge Queuing / PreTesting"
+description: "Support for merge queuing"
+author: "yamachu"
+inputs:
+  github-token:
+    description: "Token that allows access to the GitHub API"
+    required: true
+  tmp-ci-branch:
+    description: "Temporary branch to use for CI"
+    required: false
+    default: "auto.tmp"
+  merge-user-email:
+    description: "Email to use for merge commits"
+    required: false
+    default: "41898282+github-actions[bot]@users.noreply.github.com"
+  merge-user-name:
+    description: "Name to use for merge commits"
+    required: false
+    default: "github-actions[bot]"
+  pr-number:
+    description: "Pull Request Number"
+    required: true
+outputs:
+  base-branch:
+    description: "Name of the base branch"
+    value: ${{ steps.get_base_branch.outputs.result }}
+  base-branch-sha:
+    description: "SHA of the base branch"
+    value: ${{ steps.get_base_branch_sha.outputs.result }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@v7
+      with:
+        script: |
+          const { default: postPreTestActionUrl } = await import('${{ github.action_path }}/../src/postPreTestActionUrl.js')
+          return await postPreTestActionUrl({ github }, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: ${{ inputs.pr-number }},
+            runId: context.runId
+          })
+    - uses: actions/github-script@v7
+      with:
+        script: |
+          const { default: isMergeable } = await import('${{ github.action_path }}/../src/isMergeable.js')
+          await isMergeable({ github }, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: ${{ inputs.pr-number }}
+          })
+    # For local merging, we need to whole base branch history
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - shell: bash
+      run: |
+        git push origin --delete ${{ inputs.tmp-ci-branch }} || :
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+    - uses: actions/github-script@v7
+      id: get_base_branch
+      with:
+        script: |
+          const { default: getBaseBranch } = await import('${{ github.action_path }}/../src/getBaseBranch.js')
+          return await getBaseBranch({ github }, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: ${{ inputs.pr-number }}
+          })
+    - uses: actions/github-script@v7
+      id: get_base_branch_sha
+      with:
+        script: |
+          const { default: getBaseBranchSha } = await import('${{ github.action_path }}/../src/getBaseBranchSha.js')
+          return await getBaseBranchSha({ github }, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            branchName: ${{ steps.get_base_branch.outputs.result }}
+          })
+    - shell: bash
+      run: |
+        git config --global user.email ${{ inputs.merge-user-email }}
+        git config --global user.name ${{ inputs.merge-user-name }}
+
+        git fetch origin ${{ steps.get_base_branch.outputs.result }}:tmp-${{ steps.get_base_branch.outputs.result }}
+        gh pr checkout ${{ inputs.pr-number }}
+        git merge tmp-${{ steps.get_base_branch.outputs.result }}
+
+        git push origin HEAD:${{ inputs.tmp-ci-branch }}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
