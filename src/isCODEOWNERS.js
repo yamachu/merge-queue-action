@@ -24,6 +24,8 @@ export default async ({ github }, args) => {
     .flat();
 
   if (!CODEOWNERS_users.includes(`@${author}`)) {
-    throw new Error("Comment trigger user is not included in CODEOWNERS.");
+    throw new Error(
+      `Comment trigger user(${author}) is not included in CODEOWNERS.`
+    );
   }
 };
