@@ -1,11 +1,10 @@
 /**
  * @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments
- * @param {{ owner: string; repo: string }} args
+ * @param {{ owner: string; repo: string, actor: string }} args
  */
 export default async ({ github }, args) => {
-  const { owner, repo } = args;
+  const { owner, repo, actor } = args;
 
-  const author = github.triggering_actor || github.actor;
   const CODEOWNERS = await github.rest.repos.getContent({
     owner,
     repo,
@@ -23,9 +22,9 @@ export default async ({ github }, args) => {
     .map((line) => line.split(" ").slice(1))
     .flat();
 
-  if (!CODEOWNERS_users.includes(`@${author}`)) {
+  if (!CODEOWNERS_users.includes(`@${actor}`)) {
     throw new Error(
-      `Comment trigger user(${author}) is not included in CODEOWNERS.`
+      `Comment trigger user(${actor}) is not included in CODEOWNERS.`
     );
   }
 };

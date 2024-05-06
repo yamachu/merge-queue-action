@@ -44,4 +44,5 @@ runs:
           await isCODEOWNERS({ github }, {
             owner: context.repo.owner,
             repo: context.repo.repo,
+            actor: context.triggering_actor || context.actor,
           })
