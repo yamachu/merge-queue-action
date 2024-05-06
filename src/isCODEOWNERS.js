@@ -5,7 +5,7 @@
 export default async ({ github }, args) => {
   const { owner, repo } = args;
 
-  const author = github.triggering_actor;
+  const author = github.triggering_actor || github.actor;
   const CODEOWNERS = await github.rest.repos.getContent({
     owner,
     repo,
