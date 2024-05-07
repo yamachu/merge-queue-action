@@ -22,6 +22,10 @@ inputs:
   base-branch:
     description: "Name of the base branch"
     required: true
+  merge-method:
+    description: "Merge method (merge, squash, rebase)"
+    required: false
+    default: "merge"
 
 runs:
   using: composite
@@ -53,6 +57,6 @@ runs:
         git config --global user.email ${{ inputs.merge-user-email }}
         git config --global user.name ${{ inputs.merge-user-name }}
 
-        gh pr merge ${{ inputs.pr-number }} -m
+        gh pr merge ${{ inputs.pr-number }} --${{ inputs.merge-method }}
       env:
         GH_TOKEN: ${{ inputs.github-token }}
