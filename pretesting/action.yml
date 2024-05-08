@@ -36,6 +36,7 @@ runs:
   using: composite
   steps:
     - uses: actions/github-script@v7
+      name: Post comment Action URL
       with:
         script: |
           if (${{ inputs.silent }} === true) {
@@ -49,6 +50,7 @@ runs:
             runId: context.runId
           })
     - uses: actions/github-script@v7
+      name: Check PR is mergeable
       with:
         script: |
           const { default: isMergeable } = await import('${{ github.action_path }}/../src/isMergeable.js')
@@ -62,11 +64,13 @@ runs:
       with:
         fetch-depth: 0
     - shell: bash
+      name: Delete Temporary CI Branch if exists
       run: |
         git push origin --delete ${{ inputs.tmp-ci-branch }} || :
       env:
         GH_TOKEN: ${{ inputs.github-token }}
     - uses: actions/github-script@v7
+      name: Get Merge Target Base Branch
       id: get_base_branch
       with:
         script: |
@@ -77,6 +81,7 @@ runs:
             pull_number: ${{ inputs.pr-number }}
           })
     - uses: actions/github-script@v7
+      name: Get Merge Target Base Branch SHA
       id: get_base_branch_sha
       with:
         script: |
@@ -87,6 +92,7 @@ runs:
             branchName: ${{ steps.get_base_branch.outputs.result }}
           })
     - shell: bash
+      name: Push Temporary CI Branch
       run: |
         git config --global user.email ${{ inputs.merge-user-email }}
         git config --global user.name ${{ inputs.merge-user-name }}
