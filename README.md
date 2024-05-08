@@ -22,6 +22,10 @@
   - テスト実行後に、tmp ブランチを削除し、実際に merge します
   - 当該 actions 経由じゃない merge を検知し、HEAD が進んでいる場合は、merge せずにエラーを返します
 
+> [!IMPORTANT]
+> yamachu/merge-queue-action/posttesting 経由での merge では、main などへの push イベントが発火しません。
+> そのため、CD などを行う場合は、GitHub Apps などを利用して GITHUB_TOKEN を生成し、そのトークンを利用して merge を行う必要があります。
+
 ## 使い方
 
 ### yamachu/merge-queue-action/precheck
