@@ -223,6 +223,10 @@ on:
 
 として、`checkout-ref` という引数を受け取ります。
 
+また、TestingQueue として利用する workflow は、concurrency を利用して、同時に実行される workflow を制限する必要があります。
+
+`testing-queue.yml`
+
 ```yaml
 name: Testing Queue Runner
 on:
