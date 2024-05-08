@@ -158,6 +158,9 @@ jobs:
 - base-branch:
 - merge-user-email: (optional)
 - merge-user-name: (optional)
+- merge-method: (optional)
+  - merge 手法 (merge, squash, rebase)
+  - default: "merge"
 
 ## Example
 
