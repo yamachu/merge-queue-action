@@ -20,6 +20,10 @@ inputs:
   pr-number:
     description: "Pull Request Number"
     required: true
+  silent:
+    description: "Do not post a comment"
+    required: false
+    default: "false"
 outputs:
   base-branch:
     description: "Name of the base branch"
@@ -34,6 +38,9 @@ runs:
     - uses: actions/github-script@v7
       with:
         script: |
+          if (${{ inputs.silent }} === true) {
+            return
+          }
           const { default: postPreTestActionUrl } = await import('${{ github.action_path }}/../src/postPreTestActionUrl.js')
           return await postPreTestActionUrl({ github }, {
             owner: context.repo.owner,
