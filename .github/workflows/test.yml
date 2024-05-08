@@ -1,0 +1,34 @@
+name: CI
+on:
+  push:
+    branches:
+      - '!main'
+      - '!auto.*'
+  workflow_call:
+    inputs:
+      checkout-ref:
+        description: 'The ref to checkout'
+        required: false
+        type: string
+
+jobs:
+  TestJavaScript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout-ref || github.head_ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
+
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout-ref || github.head_ref }}
+      - uses: reviewdog/action-actionlint@v1
