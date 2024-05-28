@@ -13,17 +13,35 @@ jobs:
       pull-requests: write
       actions: write
     steps:
+      - name: If run on ACT, install git and gh (see gh installation guide)
+        if: ${{ env.ACT }}
+        run: |
+          (type -p wget >/dev/null || (apt update && apt-get install wget -y)) \
+          && mkdir -p -m 755 /etc/apt/keyrings \
+          && wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+          && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && apt update \
+          && apt install git gh -y
       - uses: yamachu/merge-queue-action/precheck@main
+        id: precheck
         with:
           silent: 'true'
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ fromJSON(steps.precheck.outputs.base-branch) }}
       - name: Create testing branch
-        run: git push origin HEAD:auto.${{ github.event.issue.number }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh pr checkout ${{ github.event.issue.number }}
+          git merge ${{ fromJSON(steps.precheck.outputs.base-branch) }} --no-edit
+          $ACT || git push origin HEAD:auto.${{ github.event.issue.number }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Dispatch workflow via GitHub CLI
+        if: ${{ !env.ACT }}
         run: >
           gh workflow run -R ${{ github.event.repository.full_name }}
           -f issue_number=${{ github.event.issue.number }}
