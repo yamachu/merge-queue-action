@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+        "json.schemas": [
+            {
+                "fileMatch": [
+                    // for running test locally by act
+                    "*/*event.json"
+                ],
+                // see: https://github.com/octokit/webhooks
+                "url": "https://unpkg.com/@octokit/webhooks-schemas/schema.json"
+            }
+        ]
+    },
+    "extensions": {
+        "recommendations": [
+            "remcohaszing.schemastore"
+        ]
+    }
+}
